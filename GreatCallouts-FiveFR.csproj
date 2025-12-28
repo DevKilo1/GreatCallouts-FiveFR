@@ -59,7 +59,9 @@
         <Compile Include="PublicIntoxication.cs" />
         <Compile Include="RabidAnimal.cs" />
         <Compile Include="RecklessDriver.cs" />
+        <Compile Include="RollingDomestic.cs" />
         <Compile Include="ShotsFired.cs" />
+        <Compile Include="StolenVehicle.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />

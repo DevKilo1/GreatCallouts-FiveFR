@@ -246,4 +246,97 @@ public static class CalloutConfig
         public static int MaxSuspects = Config.EnsureValue("MaxSuspects", 1);
         public static float StartDistance = Config.EnsureValue("StartDistance", 150f);
     }
+
+    public static class WelfareCheckConfig
+    {
+        static DataContainer<JObject> Config = _config.Ensure<JObject>("WelfareCheck");
+
+        public static bool Enabled = Config.EnsureValue("Enabled", true);
+        public static bool FixedLocation = Config.EnsureValue("FixedLocation", false);
+
+        public static List<Vector3> Locations
+        {
+            get
+            {
+                var locations = new List<Vector3>();
+                try
+                {
+                    locations = Config.Ensure<JArray>("Locations").GetData().Select(v => ((JObject)v).ToVector3())
+                        .ToList();
+                }
+                catch (Exception)
+                {
+                    FixedLocation = false;
+                }
+
+                return locations;
+            }
+        }
+
+        public static int MinSpawnDistance = Config.EnsureValue("MinSpawnDistance", 50);
+        public static int MaxSpawnDistance = Config.EnsureValue("MaxSpawnDistance", 200);
+        public static float StartDistance = Config.EnsureValue("StartDistance", 100f);
+    }
+
+    public static class StolenVehicleConfig
+    {
+        static DataContainer<JObject> Config = _config.Ensure<JObject>("StolenVehicle");
+
+        public static bool Enabled = Config.EnsureValue("Enabled", true);
+        public static bool FixedLocation = Config.EnsureValue("FixedLocation", false);
+
+        public static List<Vector3> Locations
+        {
+            get
+            {
+                var locations = new List<Vector3>();
+                try
+                {
+                    locations = Config.Ensure<JArray>("Locations").GetData().Select(v => ((JObject)v).ToVector3())
+                        .ToList();
+                }
+                catch (Exception)
+                {
+                    FixedLocation = false;
+                }
+
+                return locations;
+            }
+        }
+
+        public static int MinSpawnDistance = Config.EnsureValue("MinSpawnDistance", 300);
+        public static int MaxSpawnDistance = Config.EnsureValue("MaxSpawnDistance", 800);
+        public static float StartDistance = Config.EnsureValue("StartDistance", 200f);
+    }
+
+    public static class RollingDomesticConfig
+    {
+        static DataContainer<JObject> Config = _config.Ensure<JObject>("RollingDomestic");
+
+        public static bool Enabled = Config.EnsureValue("Enabled", true);
+        public static bool FixedLocation = Config.EnsureValue("FixedLocation", false);
+
+        public static List<Vector3> Locations
+        {
+            get
+            {
+                var locations = new List<Vector3>();
+                try
+                {
+                    locations = Config.Ensure<JArray>("Locations").GetData().Select(v => ((JObject)v).ToVector3())
+                        .ToList();
+                }
+                catch (Exception)
+                {
+                    FixedLocation = false;
+                }
+
+                return locations;
+            }
+        }
+
+        public static int MinSpawnDistance = Config.EnsureValue("MinSpawnDistance", 300);
+        public static int MaxSpawnDistance = Config.EnsureValue("MaxSpawnDistance", 800);
+        public static float StartDistance = Config.EnsureValue("StartDistance", 200f);
+    }
 }
