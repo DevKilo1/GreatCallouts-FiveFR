@@ -98,5 +98,21 @@
     "MinSpawnDistance": 300,
     "MaxSpawnDistance": 800,
     "StartDistance": 200.0
+  },
+  "AggressiveRoadRage": {
+    "Enabled": true,
+    "FixedLocation": false,
+    "Locations": [],
+    "MinSpawnDistance": 300,
+    "MaxSpawnDistance": 800,
+    "StartDistance": 200.0
+  },
+  "KidnappingInProgress": {
+    "Enabled": true,
+    "FixedLocation": false,
+    "Locations": [],
+    "MinSpawnDistance": 300,
+    "MaxSpawnDistance": 800,
+    "StartDistance": 200.0
   }
 }

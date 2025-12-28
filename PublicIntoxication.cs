@@ -140,7 +140,7 @@ public class PublicIntoxication : Callout
     {
         foreach(var s in _suspects)
         {
-            if (s != null && s.Exists())
+            if (s is not null && s.Exists())
                 s.AttachedBlip?.Delete();
         }
             

@@ -68,7 +68,7 @@ public class RabidAnimal : Callout
             var hash = GetRandomAnimalHash();
             var animal = await SpawnPed(hash, Location, rnd.Next(0, 360));
             
-            if (animal != null)
+            if (animal is not null)
             {
                 API.SetPedCombatAttributes(animal.Handle, 46, true); 
                 API.SetPedFleeAttributes(animal.Handle, 0, false);
@@ -115,7 +115,7 @@ public class RabidAnimal : Callout
     {
         foreach(var animal in _animals)
         {
-            if (animal != null && animal.Exists())
+            if (animal is not null && animal.Exists())
                 animal.AttachedBlip?.Delete();
         }
             

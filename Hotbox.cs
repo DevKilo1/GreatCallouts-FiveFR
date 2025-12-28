@@ -115,7 +115,7 @@ namespace GreatCallouts_FiveFR
 
         private async Task SpawnSmokeInVehicle(Vehicle vehicle)
         {
-            if (vehicle == null || !vehicle.Exists()) return;
+            if (vehicle is null || !vehicle.Exists()) return;
 
             API.RequestNamedPtfxAsset(ParticleAsset);
             await QueueService.Predicate(() => !API.HasNamedPtfxAssetLoaded(ParticleAsset));

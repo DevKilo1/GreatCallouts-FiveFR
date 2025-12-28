@@ -339,4 +339,66 @@ public static class CalloutConfig
         public static int MaxSpawnDistance = Config.EnsureValue("MaxSpawnDistance", 800);
         public static float StartDistance = Config.EnsureValue("StartDistance", 200f);
     }
+
+    public static class AggressiveRoadRageConfig
+    {
+        static DataContainer<JObject> Config = _config.Ensure<JObject>("AggressiveRoadRage");
+
+        public static bool Enabled = Config.EnsureValue("Enabled", true);
+        public static bool FixedLocation = Config.EnsureValue("FixedLocation", false);
+
+        public static List<Vector3> Locations
+        {
+            get
+            {
+                var locations = new List<Vector3>();
+                try
+                {
+                    locations = Config.Ensure<JArray>("Locations").GetData().Select(v => ((JObject)v).ToVector3())
+                        .ToList();
+                }
+                catch (Exception)
+                {
+                    FixedLocation = false;
+                }
+
+                return locations;
+            }
+        }
+
+        public static int MinSpawnDistance = Config.EnsureValue("MinSpawnDistance", 300);
+        public static int MaxSpawnDistance = Config.EnsureValue("MaxSpawnDistance", 800);
+        public static float StartDistance = Config.EnsureValue("StartDistance", 200f);
+    }
+
+    public static class KidnappingInProgressConfig
+    {
+        static DataContainer<JObject> Config = _config.Ensure<JObject>("KidnappingInProgress");
+
+        public static bool Enabled = Config.EnsureValue("Enabled", true);
+        public static bool FixedLocation = Config.EnsureValue("FixedLocation", false);
+
+        public static List<Vector3> Locations
+        {
+            get
+            {
+                var locations = new List<Vector3>();
+                try
+                {
+                    locations = Config.Ensure<JArray>("Locations").GetData().Select(v => ((JObject)v).ToVector3())
+                        .ToList();
+                }
+                catch (Exception)
+                {
+                    FixedLocation = false;
+                }
+
+                return locations;
+            }
+        }
+
+        public static int MinSpawnDistance = Config.EnsureValue("MinSpawnDistance", 300);
+        public static int MaxSpawnDistance = Config.EnsureValue("MaxSpawnDistance", 800);
+        public static float StartDistance = Config.EnsureValue("StartDistance", 200f);
+    }
 }

@@ -51,9 +51,11 @@
         <Reference Include="System.Xml"/>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="AggressiveRoadRage.cs" />
         <Compile Include="Brandishing.cs" />
         <Compile Include="CalloutConfig.cs" />
         <Compile Include="Hotbox.cs" />
+        <Compile Include="KidnappingInProgress.cs" />
         <Compile Include="MutualCombat.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="PublicIntoxication.cs" />

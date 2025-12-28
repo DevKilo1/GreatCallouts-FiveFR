@@ -80,7 +80,7 @@ public class RollingDomestic : Callout
         {
             // Spawn driver
             _driver = await SpawnPed(PedHash.Abigail, Location, 0); // Placeholder hash
-            if (_driver != null)
+            if (_driver is not null)
             {
                 _driver.SetIntoVehicle(_vehicle, VehicleSeat.Driver);
                 // Erratic driving
@@ -89,7 +89,7 @@ public class RollingDomestic : Callout
 
             // Spawn passenger
             _passenger = await SpawnPed(PedHash.Bevhills01AFM, Location, 0); // Placeholder hash
-            if (_passenger != null)
+            if (_passenger is not null)
             {
                 _passenger.SetIntoVehicle(_vehicle, VehicleSeat.Passenger);
             }
@@ -105,12 +105,12 @@ public class RollingDomestic : Callout
             blip.Sprite = BlipSprite.PersonalVehicleCar;
             blip.Color = BlipColor.Red;
 
-            if (_driver != null)
+            if (_driver is not null)
             {
                 _driver.AlwaysKeepTask = true;
                 _driver.BlockPermanentEvents = true;
             }
-            if (_passenger != null)
+            if (_passenger is not null)
             {
                 _passenger.AlwaysKeepTask = true;
                 _passenger.BlockPermanentEvents = true;
@@ -128,7 +128,7 @@ public class RollingDomestic : Callout
         await QueueService.Predicate(() =>
         {
             if (_vehicle is null || !_vehicle.Exists()) return false;
-            if (_driver == null || !_driver.IsAlive) return false;
+            if (_driver is null || !_driver.IsAlive) return false;
 
             // Trigger behavior if player is close
             if (Game.PlayerPed.Position.DistanceToSquared(_vehicle.Position) < 3600.0f) // 60m
@@ -144,7 +144,7 @@ public class RollingDomestic : Callout
 
                 if (_scenario == RollingDomesticScenario.Ejection)
                 {
-                    if (_passenger != null && _passenger.IsAlive && _passenger.IsInVehicle(_vehicle) && _vehicle.Speed > 5f)
+                    if (_passenger is not null && _passenger.IsAlive && _passenger.IsInVehicle(_vehicle) && _vehicle.Speed > 5f)
                     {
                         // Chance to jump out or be pushed
                         if (rnd.Next(100) < 2) 
@@ -184,10 +184,10 @@ public class RollingDomestic : Callout
         if (_vehicle is not null && _vehicle.Exists())
             _vehicle.AttachedBlip?.Delete();
 
-        if (_driver != null && _driver.Exists())
+        if (_driver is not null && _driver.Exists())
             _driver.AttachedBlip?.Delete();
             
-        if (_passenger != null && _passenger.Exists())
+        if (_passenger is not null && _passenger.Exists())
             _passenger.AttachedBlip?.Delete();
 
         base.OnCancelBefore();

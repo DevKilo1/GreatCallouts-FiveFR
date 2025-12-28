@@ -118,7 +118,7 @@ public class RecklessDriver : Callout
 
     public override async void OnStart(Ped closest)
     {
-        if (_suspectVehicle != null && _suspectVehicle.Exists())
+        if (_suspectVehicle is not null && _suspectVehicle.Exists())
         {
             _blip = _suspectVehicle.AttachBlip();
             _blip.Name = "Reckless Vehicle";
@@ -159,7 +159,7 @@ public class RecklessDriver : Callout
 
     public override void OnCancelBefore()
     {
-        if (_blip != null && _blip.Exists())
+        if (_blip is not null && _blip.Exists())
             _blip.Delete();
             
         base.OnCancelBefore();

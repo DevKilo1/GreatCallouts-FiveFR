@@ -127,7 +127,7 @@ public class StolenVehicle : Callout
 
             // Spawn driver
             var driver = await SpawnPed(GetRandomPedHash(), Location, 0);
-            if (driver != null)
+            if (driver is not null)
             {
                 driver.SetIntoVehicle(_vehicle, VehicleSeat.Driver);
                 _suspects.Add(driver);
@@ -147,7 +147,7 @@ public class StolenVehicle : Callout
                     if (_isImpersonating)
                     {
                         // Try to find a vehicle to chase
-                        var vehicles = World.GetAllVehicles().Where(v => v != _vehicle && v.Driver != null && v.Driver.IsAlive).ToArray();
+                        var vehicles = World.GetAllVehicles().Where(v => v != _vehicle && v.Driver is not null && v.Driver.IsAlive).ToArray();
                         if (vehicles.Any())
                         {
                             _targetVehicle = vehicles[rnd.Next(vehicles.Length)];
@@ -270,7 +270,7 @@ public class StolenVehicle : Callout
 
         foreach (var s in _suspects)
         {
-            if (s != null && s.Exists())
+            if (s is not null && s.Exists())
                 s.AttachedBlip?.Delete();
         }
 
