@@ -11,7 +11,7 @@ using FiveFR._API.Services;
 
 namespace GreatCallouts_FiveFR
 {
-    [Guid("B3C20D0F-880C-4608-8076-0A0C3288838F")]
+    [Guid("10DFA719-5CED-4193-9BE9-67C71A8BCEA9")]
     [AddonProperties( "Hotbox Call", "^3DevKilo", "1.0.0")]
     public class HotboxCall : Callout
     {
@@ -149,6 +149,8 @@ namespace GreatCallouts_FiveFR
             _blip = vehicle.AttachBlip();
             _blip.Name = "Suspicious Vehicle";
             _ = SpawnSmokeInVehicle(vehicle);
+
+            NotificationService.ShowNetworkedNotification("Dispatch: Investigate the suspicious vehicle. Reports of smoke emanating from inside.", "Dispatch");
 
             await QueueService.Predicate(() => AssignedPlayers.Any(p =>
                 !p.IsInVehicle() && p.Position.DistanceToSquared(vehicle.Position) <

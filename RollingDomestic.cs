@@ -105,6 +105,8 @@ public class RollingDomestic : Callout
             blip.Sprite = BlipSprite.PersonalVehicleCar;
             blip.Color = BlipColor.Red;
 
+            NotificationService.ShowNetworkedNotification("Dispatch: Vehicle located. Occupants appear to be arguing violently.", "Dispatch");
+
             if (_driver is not null)
             {
                 _driver.AlwaysKeepTask = true;
@@ -140,6 +142,7 @@ public class RollingDomestic : Callout
                     _vehicle.SteeringScale = 2.0f; // Temporary swerve
                     API.SetVehicleIndicatorLights(_vehicle.Handle, 1, true); // Left blinker
                     API.SetVehicleIndicatorLights(_vehicle.Handle, 0, true); // Right blinker
+                    NotificationService.InfoNotify("Vehicle is swerving erratically.", "Observation");
                 }
 
                 if (_scenario == RollingDomesticScenario.Ejection)
@@ -152,6 +155,7 @@ public class RollingDomestic : Callout
                             _passenger.Task.LeaveVehicle(_vehicle, true); // Bail out
                             // Driver flees after passenger exits
                             _driver.Task.FleeFrom(Game.PlayerPed);
+                            NotificationService.ShowNetworkedNotification("Passenger has been ejected from the moving vehicle!", "Dispatch");
                             return true; // Keep monitoring driver
                         }
                     }
@@ -165,6 +169,7 @@ public class RollingDomestic : Callout
                         if (rnd.Next(100) < 1)
                         {
                             _driver.Task.ParkVehicle(_vehicle, _vehicle.Position, _vehicle.Heading);
+                            NotificationService.ShowNetworkedNotification("Vehicle is pulling over.", "Dispatch");
                         }
                     }
                 }

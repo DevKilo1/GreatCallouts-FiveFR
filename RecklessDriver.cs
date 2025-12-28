@@ -128,6 +128,8 @@ public class RecklessDriver : Callout
             
             _suspectDriver.AlwaysKeepTask = true;
             _suspectDriver.BlockPermanentEvents = true;
+            
+            NotificationService.ShowNetworkedNotification("Dispatch: Vehicle is driving erratically. Intercept immediately.", "Dispatch");
         }
         else
         {
@@ -151,7 +153,7 @@ public class RecklessDriver : Callout
         
         if (_suspectDriver is { IsAlive: true, IsCuffed: false })
         {
-             NotificationService.InfoNotify("The vehicle has come to a stop. Proceed with caution.", "Dispatch");
+             NotificationService.ShowNetworkedNotification("The vehicle has come to a stop. Proceed with caution.", "Dispatch");
         }
         
         FinishCallout();

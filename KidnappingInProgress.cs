@@ -34,6 +34,8 @@ public class KidnappingInProgress : Callout
         CalloutDescription = "911 Report: Witness states a person was forced into a vehicle. Suspect is armed and dangerous.";
         ResponseCode = 3;
         StartDistance = CalloutConfig.KidnappingInProgressConfig.StartDistance;
+        API.CancelAllPoliceReports();
+        API.PlayPoliceReport("SCRIPTED_SCANNER_REPORT_FRANLIN_0_KIDNAP", 0f);
     }
 
     public override Task<bool> CheckRequirements() => Task.FromResult(CalloutConfig.KidnappingInProgressConfig.Enabled);
@@ -107,6 +109,8 @@ public class KidnappingInProgress : Callout
             blip.Name = "Suspect Vehicle";
             blip.Sprite = BlipSprite.PersonalVehicleCar;
             blip.Color = BlipColor.Red;
+
+            NotificationService.ShowNetworkedNotification("Dispatch: Suspect vehicle located. Approach with caution, hostage reported inside.", "Dispatch");
 
             if (_suspect is not null)
             {

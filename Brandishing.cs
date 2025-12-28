@@ -108,6 +108,7 @@ public class Brandishing : Callout
                 var blip = s.AttachBlip();
                 blip.Name = "Armed Subject";
             }
+            NotificationService.ShowNetworkedNotification("Dispatch: Caller reports subject is brandishing a weapon. Approach with caution.", "Dispatch");
         }
         else
         {
@@ -153,15 +154,18 @@ public class Brandishing : Callout
             if (reaction < 40) // 40% chance to attack
             {
                  suspect.Task.FightAgainst(Game.PlayerPed);
+                 NotificationService.ShowNetworkedNotification("Subject is engaging!", "Dispatch");
             }
             else if (reaction < 70) // 30% chance to flee
             {
                  suspect.Task.FleeFrom(Game.PlayerPed);
+                 NotificationService.ShowNetworkedNotification("Subject is fleeing!", "Dispatch");
             }
             else // 30% chance to surrender
             {
                  suspect.Task.ClearAll();
                  suspect.Task.HandsUp(120000); // Hands up for 2 minutes
+                 NotificationService.ShowNetworkedNotification("Subject is complying.", "Dispatch");
             }
         }
     }

@@ -103,6 +103,7 @@ public class MutualCombat : Callout
 
     public override void OnStart(Ped closest)
     {
+        NotificationService.ShowNetworkedNotification("Dispatch: Fight in progress. Break it up.", "Dispatch");
         foreach (var suspect in suspects)
         {
             suspect.AttachBlip();

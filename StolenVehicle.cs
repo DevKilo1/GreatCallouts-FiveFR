@@ -44,6 +44,9 @@ public class StolenVehicle : Callout
             "ANPR Hit: A vehicle reported stolen has been detected in the area. Intercept and investigate.";
         ResponseCode = 3;
         StartDistance = CalloutConfig.StolenVehicleConfig.StartDistance;
+        API.CancelAllPoliceReports();
+        API.PlayPoliceReport("SCRIPTED_SCANNER_REPORT_CAR_STEAL_4_01",1f);
+        
     }
 
     public override Task<bool> CheckRequirements() => Task.FromResult(CalloutConfig.StolenVehicleConfig.Enabled);
@@ -177,6 +180,8 @@ public class StolenVehicle : Callout
             blip.Name = "Stolen Vehicle";
             blip.Sprite = BlipSprite.PersonalVehicleCar;
 
+            NotificationService.ShowNetworkedNotification("Dispatch: ANPR hit confirmed. Vehicle is listed as stolen.", "Dispatch");
+
             if (_suspects.Any())
             {
                 foreach (var s in _suspects)
@@ -206,6 +211,7 @@ public class StolenVehicle : Callout
             if (!_pursuitTriggered && Game.PlayerPed.Position.DistanceToSquared(_vehicle.Position) < 2500.0f) // 50m
             {
                 _pursuitTriggered = true;
+                NotificationService.ShowNetworkedNotification("Dispatch: Suspect is fleeing! Pursuit initiated.", "Dispatch");
 
                 if (_scenario == StolenVehicleScenario.Joyride)
                 {
@@ -236,6 +242,7 @@ public class StolenVehicle : Callout
                             if (s.IsInVehicle(_vehicle))
                                 s.Task.VehicleChase(Game.PlayerPed);
                         }
+                        NotificationService.ShowNetworkedNotification("Dispatch: Suspect is using an emergency vehicle to ram officers!", "Dispatch");
                     }
                     else if (_isImpersonating)
                     {

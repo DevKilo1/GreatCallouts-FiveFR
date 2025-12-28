@@ -168,6 +168,8 @@ public class AggressiveRoadRage : Callout
 
         base.OnStart(closest);
 
+        NotificationService.ShowNetworkedNotification("Dispatch: Multiple vehicles reported driving recklessly and ramming each other.", "Dispatch");
+
         // Logic loop
         await QueueService.Predicate(() =>
         {
@@ -178,6 +180,7 @@ public class AggressiveRoadRage : Callout
             if (!_pursuitTriggered && Game.PlayerPed.Position.DistanceToSquared(_vehicle1.Position) < 2500.0f) // 50m
             {
                 _pursuitTriggered = true;
+                NotificationService.ShowNetworkedNotification("Dispatch: Officers on scene. Suspects are still engaging.", "Dispatch");
             }
 
             // If one stops, the other might ram or flee
@@ -187,17 +190,29 @@ public class AggressiveRoadRage : Callout
                 {
                     _hasReactedToStop = true;
                     if (rnd.Next(2) == 0)
+                    {
                         _driver2.Task.VehicleChase(_driver1); // Ram
+                        NotificationService.ShowNetworkedNotification("Suspect 2 is ramming Suspect 1!", "Dispatch");
+                    }
                     else
+                    {
                         _driver2.Task.FleeFrom(Game.PlayerPed); // Flee
+                        NotificationService.ShowNetworkedNotification("Suspect 2 is fleeing the scene!", "Dispatch");
+                    }
                 }
                 else if (_vehicle2.Speed < 1.0f && _vehicle1.Speed > 5.0f)
                 {
                     _hasReactedToStop = true;
                     if (rnd.Next(2) == 0)
+                    {
                         _driver1.Task.VehicleChase(_driver2); // Ram
+                        NotificationService.ShowNetworkedNotification("Suspect 1 is ramming Suspect 2!", "Dispatch");
+                    }
                     else
+                    {
                         _driver1.Task.FleeFrom(Game.PlayerPed); // Flee
+                        NotificationService.ShowNetworkedNotification("Suspect 1 is fleeing the scene!", "Dispatch");
+                    }
                 }
             }
 

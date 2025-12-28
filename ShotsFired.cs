@@ -115,6 +115,7 @@ public class ShotsFired : Callout
 
     public override async void OnStart(Ped closest)
     {
+        NotificationService.ShowNetworkedNotification("Dispatch: Multiple shots fired reported at your location. Suspects are armed.", "Dispatch");
         suspects.ForEach((suspect) =>
         {
             suspect.AttachBlip();

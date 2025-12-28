@@ -93,6 +93,7 @@ public class RabidAnimal : Callout
                 animal.BlockPermanentEvents = true;
                 animal.Task.FightAgainst(Game.PlayerPed);
             }
+            NotificationService.ShowNetworkedNotification("Dispatch: Animal control is unavailable. Handle the aggressive animal.", "Dispatch");
         }
         else
         {

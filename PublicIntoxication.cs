@@ -101,6 +101,8 @@ public class PublicIntoxication : Callout
                 s.BlockPermanentEvents = true;
             }
             
+            NotificationService.ShowNetworkedNotification("Dispatch: Subject is reported to be highly intoxicated and belligerent.", "Dispatch");
+
             // Occasionally play a drunk idle animation or shout
             _ = Task.Run(async () =>
             {
@@ -113,6 +115,7 @@ public class PublicIntoxication : Callout
                         {
                              // Stumble
                              s.Task.PlayAnimation("move_m@drunk@verydrunk", "idle", 8.0f, -8.0f, 2000, AnimationFlags.None, 0f);
+                             NotificationService.InfoNotify("Subject is stumbling.", "Observation");
                         }
                     }
                 }
