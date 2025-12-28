@@ -6,13 +6,15 @@
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
         <ProjectGuid>{9570A444-06E8-4D6B-9721-5E2A89A0231E}</ProjectGuid>
-        <OutputType>Exe</OutputType>
+        <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>GreatCallouts_FiveFR</RootNamespace>
-        <AssemblyName>GreatCallouts_FiveFR</AssemblyName>
+        <AssemblyName>GreatCallouts.net</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <LangVersion>default</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,16 +36,42 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
+        <Reference Include="CitizenFX.Core.Client, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\CitizenFX.Core.Client.1.0.22443\lib\net45\CitizenFX.Core.Client.dll</HintPath>
+        </Reference>
+        <Reference Include="FiveFR.API.net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\FiveFR.API.net.0.9.1\lib\net472\FiveFR.API.net.dll</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+          <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+        </Reference>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
         <Reference Include="System.Xml"/>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Program.cs"/>
+        <Compile Include="CalloutConfig.cs" />
+        <Compile Include="Hotbox.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="ShotsFired.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="config.json" />
+      <Content Include="FiveFR.API.net.targets" />
+      <Content Include="ReleaseNotes.txt" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <Import Project="packages\FiveFR.API.net.0.9.1\build\FiveFR.API.net.targets" Condition="Exists('packages\FiveFR.API.net.0.9.1\build\FiveFR.API.net.targets')" />
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+      <PropertyGroup>
+        <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+      </PropertyGroup>
+      <Error Condition="!Exists('packages\FiveFR.API.net.0.9.1\build\FiveFR.API.net.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\FiveFR.API.net.0.9.1\build\FiveFR.API.net.targets'))" />
+    </Target>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">

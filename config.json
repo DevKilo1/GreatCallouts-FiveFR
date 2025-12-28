@@ -1,0 +1,24 @@
+{
+  "Hotbox": {
+    "Enabled": true,
+    "FixedLocation": false,
+    "Locations": [
+      { "X": 100.0, "Y": 200.0, "Z": 30.0 },
+      { "X": 150.0, "Y": 250.0, "Z": 35.0 }
+    ],
+    "StartRadius": 100.0
+  },
+  "ShotsFired": {
+    "Enabled": true,
+    "FixedLocation": false,
+    "Locations": [
+      { "X": 100.0, "Y": 200.0, "Z": 30.0 },
+      { "X": 150.0, "Y": 250.0, "Z": 35.0 }
+    ],
+    "MinSpawnDistance": 200,
+    "MaxSpawnDistance": 750,
+    "MinSuspects": 1,
+    "MaxSuspects": 8,
+    "StartDistance": 200.0
+  }
+}
