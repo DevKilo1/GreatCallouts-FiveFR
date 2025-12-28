@@ -20,10 +20,11 @@ public class ShotsFired : Callout
     List<Ped> suspects = new();
     bool endedEarly = true;
 
-    RelationshipGroup suspectGroup = new(API.GetHashKey("SUSPECTS"));
+    private RelationshipGroup suspectGroup;
 
     public ShotsFired()
     {
+        suspectGroup = new(API.GetHashKey("SUSPECTS"));
         if (CalloutConfig.ShotsFiredConfig.FixedLocation && CalloutConfig.ShotsFiredConfig.Locations.Any())
             InitInfo(CalloutConfig.ShotsFiredConfig.Locations.SelectRandom());
         else
@@ -133,5 +134,6 @@ public class ShotsFired : Callout
             if (suspect is null) continue;
             suspect?.AttachedBlip?.Delete();
         }
+        suspectGroup.Remove();
     }
 }
