@@ -12,12 +12,23 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR
 {
     [Guid("B3C20D0F-880C-4608-8076-0A0C3288838F")]
-    [AddonProperties( "Hotbox Call", "DevKilo", "1.0.0")]
+    [AddonProperties( "Hotbox Call", "^3DevKilo", "1.0.0")]
     public class HotboxCall : Callout
     {
         private int _particleHandle;
         private Blip? _blip;
-        Vector3 GetLocation() => Game.PlayerPed.Position.Around(300f).ClosestParkedCarPlacement();
+        
+        Vector3 GetLocation()
+        {
+            var distance = rnd.Next(CalloutConfig.HotboxConfig.MinSpawnDistance, CalloutConfig.HotboxConfig.MaxSpawnDistance);
+            var offsetX = rnd.Next(-100, 100) / 100f;
+            var offsetY = rnd.Next(-100, 100) / 100f;
+            var direction = new Vector3(offsetX, offsetY, 0);
+            direction.Normalize();
+            var pos = Game.PlayerPed.Position + (direction * distance);
+            return pos.ClosestParkedCarPlacement();
+        }
+
         public HotboxCall()
         {
             if (CalloutConfig.HotboxConfig.FixedLocation && CalloutConfig.HotboxConfig.Locations.Any())
@@ -83,14 +94,17 @@ namespace GreatCallouts_FiveFR
                 var veh = task.Result;
                 var driver = await SpawnPed(GetRandomPedHash(), veh.Position, veh.Heading);
                 driver.SetIntoVehicle(veh, VehicleSeat.Driver);
-                int seatIndex = 1;
-                int randomAdditionalPassengers = rnd.Next(0, 3);
+                
+                int randomAdditionalPassengers = rnd.Next(CalloutConfig.HotboxConfig.MinSuspects, CalloutConfig.HotboxConfig.MaxSuspects + 1);
+                // Seats: 0 (Passenger), 1 (LeftRear), 2 (RightRear)
                 for (int i = 0; i < randomAdditionalPassengers; i++)
                 {
-                    var _ped = await SpawnPed(GetRandomPedHash(), veh.Position, veh.Heading);
-                    _ped.SetIntoVehicle(veh, (VehicleSeat) seatIndex);
-                    seatIndex++;
-                    await BaseScript.Delay(100);
+                    if (API.IsVehicleSeatFree(veh.Handle, i))
+                    {
+                        var _ped = await SpawnPed(GetRandomPedHash(), veh.Position, veh.Heading);
+                        _ped.SetIntoVehicle(veh, (VehicleSeat)i);
+                        await BaseScript.Delay(100);
+                    }
                 }
             });
             InitBlip();

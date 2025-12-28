@@ -12,7 +12,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("07BF85A3-31CB-40F7-A216-390030273903")]
-[AddonProperties("Reckless Driver", "DevKilo", "1.0.0")]
+[AddonProperties("Reckless Driver", "^3DevKilo", "1.0.0")]
 public class RecklessDriver : Callout
 {
     static Random rnd = new Random();
@@ -22,7 +22,11 @@ public class RecklessDriver : Callout
 
     public RecklessDriver()
     {
-        InitInfo(GetLocation());
+        if (CalloutConfig.RecklessDriverConfig.FixedLocation && CalloutConfig.RecklessDriverConfig.Locations.Any())
+            InitInfo(CalloutConfig.RecklessDriverConfig.Locations.SelectRandom());
+        else
+            InitInfo(GetLocation());
+            
         ShortName = "Reckless Driver";
         CalloutDescription = "911 Report: A vehicle is driving erratically and endangering public safety. Intercept and investigate.";
         StartDistance = CalloutConfig.RecklessDriverConfig.StartDistance;
@@ -89,6 +93,24 @@ public class RecklessDriver : Callout
         _suspectDriver = await SpawnPed(GetRandomPedHash(), outPosition, outHeading);
         
         _suspectDriver.SetIntoVehicle(_suspectVehicle, VehicleSeat.Driver);
+        
+        // Add passengers if configured
+        int totalSuspects = rnd.Next(CalloutConfig.RecklessDriverConfig.MinSuspects, CalloutConfig.RecklessDriverConfig.MaxSuspects + 1);
+        int passengers = totalSuspects - 1;
+        
+        if (passengers > 0)
+        {
+             for (int i = 0; i < passengers; i++)
+             {
+                 if (API.IsVehicleSeatFree(_suspectVehicle.Handle, i))
+                 {
+                     var passenger = await SpawnPed(GetRandomPedHash(), outPosition, outHeading);
+                     passenger.SetIntoVehicle(_suspectVehicle, (VehicleSeat)i);
+                     passenger.BlockPermanentEvents = true;
+                     passenger.AlwaysKeepTask = true;
+                 }
+             }
+        }
         
         // Initial wander task so they are moving when player arrives
         _suspectDriver.Task.CruiseWithVehicle(_suspectVehicle, 20f, 786603); // Rushed driving style

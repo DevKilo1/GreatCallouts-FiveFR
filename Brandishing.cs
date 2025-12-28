@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -12,18 +13,21 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("D4E5F6A7-B8C9-0D1E-2F3A-4B5C6D7E8F90")]
-[AddonProperties("Person with a Firearm", "DevKilo", "1.0")]
+[AddonProperties("Person with a Firearm", "^3DevKilo", "1.0")]
 public class Brandishing : Callout
 {
     static Random rnd = new Random();
-    private Ped _suspect;
-    private Blip _blip;
+    private List<Ped> _suspects = new();
     private bool _hasReacted = false;
 
     public Brandishing()
     {
-        InitInfo(GetLocation());
-        ShortName = "Person with a Firearm";
+        if (CalloutConfig.BrandishingConfig.FixedLocation && CalloutConfig.BrandishingConfig.Locations.Any())
+            InitInfo(CalloutConfig.BrandishingConfig.Locations.SelectRandom());
+        else
+            InitInfo(GetLocation());
+            
+        ShortName = "911 Report: Brandishing";
         CalloutDescription = "911 Report: A subject is reported to be walking in public with a visible firearm.";
         ResponseCode = 3;
         StartDistance = CalloutConfig.BrandishingConfig.StartDistance;
@@ -79,20 +83,31 @@ public class Brandishing : Callout
     {
         InitBlip();
         
-        _suspect = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
-        _suspect.AlwaysKeepTask = true;
-        _suspect.BlockPermanentEvents = true;
-        var weapon = GetRandomWeaponHash();
-        _suspect.Weapons.Give(weapon, 255, true, true);
-        _suspect.Task.WanderAround();
+        int count = rnd.Next(CalloutConfig.BrandishingConfig.MinSuspects, CalloutConfig.BrandishingConfig.MaxSuspects);
+        if (count < 1) count = 1;
+
+        for (int i = 0; i < count; i++)
+        {
+            var suspect = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
+            suspect.AlwaysKeepTask = true;
+            suspect.BlockPermanentEvents = true;
+            var weapon = GetRandomWeaponHash();
+            suspect.Weapons.Give(weapon, 255, true, true);
+            suspect.Task.WanderAround();
+            _suspects.Add(suspect);
+            await BaseScript.Delay(100);
+        }
     }
 
     public override async void OnStart(Ped closest)
     {
-        if (_suspect is not null && _suspect.Exists())
+        if (_suspects.Any())
         {
-            _blip = _suspect.AttachBlip();
-            _blip.Name = "Armed Subject";
+            foreach(var s in _suspects)
+            {
+                var blip = s.AttachBlip();
+                blip.Name = "Armed Subject";
+            }
         }
         else
         {
@@ -106,12 +121,19 @@ public class Brandishing : Callout
         // Predicate returns true to continue waiting, false to stop waiting
         await QueueService.Predicate(() => 
         {
-            if (!_suspect.IsAlive || _suspect.IsCuffed) return false;
+            if (_suspects.All(s => !s.IsAlive || s.IsCuffed)) return false;
 
-            if (!_hasReacted && Game.PlayerPed.Position.DistanceToSquared(_suspect.Position) < 400f) // 20 meters
+            if (!_hasReacted)
             {
-                _hasReacted = true;
-                ReactToPolice();
+                foreach(var s in _suspects)
+                {
+                    if (s.IsAlive && !s.IsCuffed && Game.PlayerPed.Position.DistanceToSquared(s.Position) < 400f) // 20 meters
+                    {
+                        _hasReacted = true;
+                        ReactToPolice();
+                        break;
+                    }
+                }
             }
 
             return true;
@@ -122,29 +144,35 @@ public class Brandishing : Callout
 
     private void ReactToPolice()
     {
-        int reaction = rnd.Next(0, 100);
-        if (reaction < 40) // 40% chance to attack
+        NotificationService.InfoNotify("Subjects are reacting to police presence.", "Observation");
+        foreach(var suspect in _suspects)
         {
-             NotificationService.InfoNotify("Suspect is engaging!", "Observation");
-             _suspect.Task.FightAgainst(Game.PlayerPed);
-        }
-        else if (reaction < 70) // 30% chance to flee
-        {
-             NotificationService.InfoNotify("Suspect is fleeing!", "Observation");
-             _suspect.Task.FleeFrom(Game.PlayerPed);
-        }
-        else // 30% chance to surrender
-        {
-             NotificationService.InfoNotify("Suspect is complying.", "Observation");
-             _suspect.Task.ClearAll();
-             _suspect.Task.HandsUp(120000); // Hands up for 2 minutes
+            if (!suspect.IsAlive || suspect.IsCuffed) continue;
+
+            int reaction = rnd.Next(0, 100);
+            if (reaction < 40) // 40% chance to attack
+            {
+                 suspect.Task.FightAgainst(Game.PlayerPed);
+            }
+            else if (reaction < 70) // 30% chance to flee
+            {
+                 suspect.Task.FleeFrom(Game.PlayerPed);
+            }
+            else // 30% chance to surrender
+            {
+                 suspect.Task.ClearAll();
+                 suspect.Task.HandsUp(120000); // Hands up for 2 minutes
+            }
         }
     }
 
     public override void OnCancelBefore()
     {
-        if (_blip != null && _blip.Exists())
-            _blip.Delete();
+        foreach(var s in _suspects)
+        {
+            if (s != null && s.Exists())
+                s.AttachedBlip?.Delete();
+        }
             
         base.OnCancelBefore();
     }

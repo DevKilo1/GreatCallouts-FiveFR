@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D")]
-[AddonProperties("Mutual Combat", "DevKilo", "1.0")]
+[AddonProperties("Mutual Combat", "^3DevKilo", "1.0")]
 public class MutualCombat : Callout
 {
     static Random rnd = new Random();
@@ -26,8 +26,13 @@ public class MutualCombat : Callout
     {
         fighterGroup1 = new(API.GetHashKey("FIGHTER_ONE"));
         fighterGroup2 = new(API.GetHashKey("FIGHTER_TWO"));
-        InitInfo(GetLocation());
-        ShortName = "Mutual Combat";
+        
+        if (CalloutConfig.MutualCombatConfig.FixedLocation && CalloutConfig.MutualCombatConfig.Locations.Any())
+            InitInfo(CalloutConfig.MutualCombatConfig.Locations.SelectRandom());
+        else
+            InitInfo(GetLocation());
+            
+        ShortName = "911 Report: Mutual Combat";
         CalloutDescription = "911 Report: A physical altercation has broken out between two individuals.";
         ResponseCode = 2;
         StartDistance = CalloutConfig.MutualCombatConfig.StartDistance;
@@ -71,25 +76,25 @@ public class MutualCombat : Callout
     {
         InitBlip();
         
-        // Spawn Fighter 1
-        Ped suspect1 = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
-        suspects.Add(suspect1);
-        suspect1.RelationshipGroup = fighterGroup1;
-        suspect1.Task.WanderAround();
-        
-        await BaseScript.Delay(100);
+        int suspectsNumber = rnd.Next(CalloutConfig.MutualCombatConfig.MinSuspects, CalloutConfig.MutualCombatConfig.MaxSuspects);
+        if (suspectsNumber < 2) suspectsNumber = 2;
 
-        // Spawn Fighter 2
-        Ped suspect2 = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
-        suspects.Add(suspect2);
-        suspect2.RelationshipGroup = fighterGroup2;
-        suspect2.Task.WanderAround();
-        
-        suspect1.AlwaysKeepTask = true;
-        suspect2.AlwaysKeepTask = true;
+        for (int i = 0; i < suspectsNumber; i++)
+        {
+            Ped suspect = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
+            suspects.Add(suspect);
             
-        suspect1.BlockPermanentEvents = true;
-        suspect2.BlockPermanentEvents = true;
+            if (i % 2 == 0)
+                suspect.RelationshipGroup = fighterGroup1;
+            else
+                suspect.RelationshipGroup = fighterGroup2;
+                
+            suspect.Task.WanderAround();
+            suspect.AlwaysKeepTask = true;
+            suspect.BlockPermanentEvents = true;
+            
+            await BaseScript.Delay(100);
+        }
 
         // Set hostility
         fighterGroup1.SetRelationshipBetweenGroups(fighterGroup2, Relationship.Hate, true);
@@ -98,22 +103,12 @@ public class MutualCombat : Callout
 
     public override void OnStart(Ped closest)
     {
-        if (suspects.Count >= 2)
+        foreach (var suspect in suspects)
         {
-            var s1 = suspects[0];
-            var s2 = suspects[1];
-
-            s1.AttachBlip();
-            s2.AttachBlip();
-
-            // Force them to fight each other specifically
-            s1.Task.FightAgainst(s2);
-            s2.Task.FightAgainst(s1);
+            suspect.AttachBlip();
+            suspect.Task.FightAgainstHatedTargets(200f, -1);
         }
-        else
-        {
-            EndCallout();
-        }
+
         _ = QueueService.Predicate(() => !suspects.All(s => !s.IsAlive || s.IsCuffed)).ContinueWith(_ => FinishCallout()); // Finish callout when complete.
         base.OnStart(closest);
     }

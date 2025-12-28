@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("075ED322-CDF9-4FA3-BAE9-A195E991A453")]
-[AddonProperties("Shots Fired", "DevKilo", "1.0")]
+[AddonProperties("Shots Fired", "^3DevKilo", "1.0")]
 public class ShotsFired : Callout
 {
     static Random rnd = new Random();
@@ -30,7 +30,7 @@ public class ShotsFired : Callout
         else
             InitInfo(GetLocation());
         ShortName = "Shots Fired";
-        CalloutDescription = "911 Report: Gunshots have been reported in the area! Respond code 3.";
+        CalloutDescription = "Gunshots have been reported in the area! Respond code 3.";
         ResponseCode = 3;
         StartDistance = CalloutConfig.ShotsFiredConfig.StartDistance;
     }

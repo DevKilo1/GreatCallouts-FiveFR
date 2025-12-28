@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -12,16 +13,19 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("CF0C7C6C-4501-4878-926E-856A4DD19DE3")]
-[AddonProperties("Public Intoxication", "DevKilo", "1.0")]
+[AddonProperties("Public Intoxication", "^3DevKilo", "1.0")]
 public class PublicIntoxication : Callout
 {
     static Random rnd = new Random();
-    private Ped _suspect;
-    private Blip _blip;
+    private List<Ped> _suspects = new();
 
     public PublicIntoxication()
     {
-        InitInfo(GetLocation());
+        if (CalloutConfig.PublicIntoxicationConfig.FixedLocation && CalloutConfig.PublicIntoxicationConfig.Locations.Any())
+            InitInfo(CalloutConfig.PublicIntoxicationConfig.Locations.SelectRandom());
+        else
+            InitInfo(GetLocation());
+            
         ShortName = "Public Intoxication";
         CalloutDescription = "911 Report: Reports of an individual causing a disturbance due to public intoxication. Respond and assess the situation.";
         ResponseCode = 2;
@@ -66,36 +70,50 @@ public class PublicIntoxication : Callout
     {
         InitBlip();
         
-        _suspect = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
-        
-        // Apply drunk movement clipset
         API.RequestClipSet("move_m@drunk@verydrunk");
         await QueueService.Predicate(() => !API.HasClipSetLoaded("move_m@drunk@verydrunk"));
-        API.SetPedMovementClipset(_suspect.Handle, "move_m@drunk@verydrunk", 1.0f);
-        
-        _suspect.Task.WanderAround();
+
+        int count = rnd.Next(CalloutConfig.PublicIntoxicationConfig.MinSuspects, CalloutConfig.PublicIntoxicationConfig.MaxSuspects);
+        if (count < 1) count = 1;
+
+        for (int i = 0; i < count; i++)
+        {
+            var suspect = await SpawnPed(GetRandomPedHash(), Location, rnd.Next(0, 360));
+            
+            // Apply drunk movement clipset
+            API.SetPedMovementClipset(suspect.Handle, "move_m@drunk@verydrunk", 1.0f);
+            
+            suspect.Task.WanderAround();
+            _suspects.Add(suspect);
+            await BaseScript.Delay(100);
+        }
     }
 
     public override async void OnStart(Ped closest)
     {
-        if (_suspect != null && _suspect.Exists())
+        if (_suspects.Any())
         {
-            _blip = _suspect.AttachBlip();
-            _blip.Name = "Intoxicated Subject";
-            
-            _suspect.AlwaysKeepTask = true;
-            _suspect.BlockPermanentEvents = true;
+            foreach(var s in _suspects)
+            {
+                var blip = s.AttachBlip();
+                blip.Name = "Intoxicated Subject";
+                s.AlwaysKeepTask = true;
+                s.BlockPermanentEvents = true;
+            }
             
             // Occasionally play a drunk idle animation or shout
             _ = Task.Run(async () =>
             {
-                while (_suspect.IsAlive && !_suspect.IsCuffed)
+                while (_suspects.Any(s => s.IsAlive && !s.IsCuffed))
                 {
                     await BaseScript.Delay(rnd.Next(5000, 15000));
-                    if (_suspect.IsWalking)
+                    foreach(var s in _suspects)
                     {
-                         // Stumble
-                         _suspect.Task.PlayAnimation("move_m@drunk@verydrunk", "idle", 8.0f, -8.0f, 2000, AnimationFlags.None, 0f);
+                        if (s.IsAlive && !s.IsCuffed && s.IsWalking && rnd.Next(0, 100) < 30)
+                        {
+                             // Stumble
+                             s.Task.PlayAnimation("move_m@drunk@verydrunk", "idle", 8.0f, -8.0f, 2000, AnimationFlags.None, 0f);
+                        }
                     }
                 }
             });
@@ -111,7 +129,7 @@ public class PublicIntoxication : Callout
         // Predicate returns true to continue waiting, false to stop waiting
         await QueueService.Predicate(() => 
         {
-            if (!_suspect.IsAlive || _suspect.IsCuffed) return false;
+            if (_suspects.All(s => !s.IsAlive || s.IsCuffed)) return false;
             return true;
         });
 
@@ -120,8 +138,11 @@ public class PublicIntoxication : Callout
 
     public override void OnCancelBefore()
     {
-        if (_blip != null && _blip.Exists())
-            _blip.Delete();
+        foreach(var s in _suspects)
+        {
+            if (s != null && s.Exists())
+                s.AttachedBlip?.Delete();
+        }
             
         base.OnCancelBefore();
     }
