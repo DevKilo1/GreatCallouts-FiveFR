@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("A1B2C3D4-E5F6-7890-1234-567890ABCDEF")]
-[AddonProperties("Rabid Animal", "^3DevKilo", "1.0")]
+[AddonProperties("Rabid Animal", "^3DevKilo^7", "1.0")]
 public class RabidAnimal : Callout
 {
     static Random rnd = new Random();
@@ -88,7 +88,8 @@ public class RabidAnimal : Callout
             {
                 var blip = animal.AttachBlip();
                 blip.Name = "Rabid Animal";
-                blip.Sprite = BlipSprite.Enemy; 
+                blip.Sprite = BlipSprite.Enemy;
+                blip.Scale = 0.7f;
                 animal.AlwaysKeepTask = true;
                 animal.BlockPermanentEvents = true;
                 animal.Task.FightAgainst(Game.PlayerPed);
@@ -105,6 +106,13 @@ public class RabidAnimal : Callout
 
         await QueueService.Predicate(() => 
         {
+            foreach (var animal in _animals)
+            {
+                if (animal.IsDead && animal.AttachedBlip is not null)
+                {
+                    animal.AttachedBlip.Delete();
+                }
+            }
             if (_animals.All(a => !a.IsAlive)) return false;
             return true;
         });

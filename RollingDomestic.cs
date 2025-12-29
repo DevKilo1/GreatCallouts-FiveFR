@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("D4E5F6A7-B890-1234-5678-9012CDEFAB12")]
-[AddonProperties("Rolling Domestic", "^3DevKilo", "1.0")]
+[AddonProperties("Rolling Domestic", "^3DevKilo^7", "1.0")]
 public class RollingDomestic : Callout
 {
     static Random rnd = new Random();
@@ -111,11 +111,17 @@ public class RollingDomestic : Callout
             {
                 _driver.AlwaysKeepTask = true;
                 _driver.BlockPermanentEvents = true;
+                var dBlip = _driver.AttachBlip();
+                dBlip.Name = "Driver";
+                dBlip.Scale = 0.7f;
             }
             if (_passenger is not null)
             {
                 _passenger.AlwaysKeepTask = true;
                 _passenger.BlockPermanentEvents = true;
+                var pBlip = _passenger.AttachBlip();
+                pBlip.Name = "Passenger";
+                pBlip.Scale = 0.7f;
             }
         }
         else
@@ -130,7 +136,36 @@ public class RollingDomestic : Callout
         await QueueService.Predicate(() =>
         {
             if (_vehicle is null || !_vehicle.Exists()) return false;
-            if (_driver is null || !_driver.IsAlive) return false;
+            if (_driver is null || !_driver.IsAlive)
+            {
+                if (_driver is not null && _driver.AttachedBlip is not null) _driver.AttachedBlip.Delete();
+                return false;
+            }
+
+            // Blip management
+            if (_driver.IsCuffed && _driver.AttachedBlip is not null)
+            {
+                if (_driver.AttachedBlip.Color != BlipColor.Blue)
+                {
+                    _driver.AttachedBlip.Color = BlipColor.Blue;
+                    _driver.AttachedBlip.IsFlashing = true;
+                }
+            }
+            if (_passenger is not null)
+            {
+                if (_passenger.IsDead && _passenger.AttachedBlip is not null)
+                {
+                    _passenger.AttachedBlip.Delete();
+                }
+                else if (_passenger.IsCuffed && _passenger.AttachedBlip is not null)
+                {
+                    if (_passenger.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        _passenger.AttachedBlip.Color = BlipColor.Blue;
+                        _passenger.AttachedBlip.IsFlashing = true;
+                    }
+                }
+            }
 
             // Trigger behavior if player is close
             if (Game.PlayerPed.Position.DistanceToSquared(_vehicle.Position) < 3600.0f) // 60m

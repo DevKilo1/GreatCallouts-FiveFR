@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("CF0C7C6C-4501-4878-926E-856A4DD19DE3")]
-[AddonProperties("Public Intoxication", "^3DevKilo", "1.0")]
+[AddonProperties("Public Intoxication", "^3DevKilo^7", "1.0")]
 public class PublicIntoxication : Callout
 {
     static Random rnd = new Random();
@@ -97,6 +97,7 @@ public class PublicIntoxication : Callout
             {
                 var blip = s.AttachBlip();
                 blip.Name = "Intoxicated Subject";
+                blip.Scale = 0.7f;
                 s.AlwaysKeepTask = true;
                 s.BlockPermanentEvents = true;
             }
@@ -132,6 +133,21 @@ public class PublicIntoxication : Callout
         // Predicate returns true to continue waiting, false to stop waiting
         await QueueService.Predicate(() => 
         {
+            foreach (var suspect in _suspects)
+            {
+                if (suspect.IsDead && suspect.AttachedBlip is not null)
+                {
+                    suspect.AttachedBlip.Delete();
+                }
+                else if (suspect.IsCuffed && suspect.AttachedBlip is not null)
+                {
+                    if (suspect.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        suspect.AttachedBlip.Color = BlipColor.Blue;
+                        suspect.AttachedBlip.IsFlashing = true;
+                    }
+                }
+            }
             if (_suspects.All(s => !s.IsAlive || s.IsCuffed)) return false;
             return true;
         });

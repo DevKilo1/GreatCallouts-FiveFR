@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("B1C2D3E4-F5A6-7890-1234-567890123456")]
-[AddonProperties("Aggressive Road Rage", "^3DevKilo", "1.0")]
+[AddonProperties("Aggressive Road Rage", "^3DevKilo^7", "1.0")]
 public class AggressiveRoadRage : Callout
 {
     static Random rnd = new Random();
@@ -166,6 +166,19 @@ public class AggressiveRoadRage : Callout
             return;
         }
 
+        if (_driver1 is not null)
+        {
+            var d1Blip = _driver1.AttachBlip();
+            d1Blip.Name = "Suspect 1";
+            d1Blip.Scale = 0.7f;
+        }
+        if (_driver2 is not null)
+        {
+            var d2Blip = _driver2.AttachBlip();
+            d2Blip.Name = "Suspect 2";
+            d2Blip.Scale = 0.7f;
+        }
+
         base.OnStart(closest);
 
         NotificationService.ShowNetworkedNotification("Dispatch: Multiple vehicles reported driving recklessly and ramming each other.", "Dispatch");
@@ -174,7 +187,34 @@ public class AggressiveRoadRage : Callout
         await QueueService.Predicate(() =>
         {
             if (_vehicle1 is null || !_vehicle1.Exists() || _vehicle2 is null || !_vehicle2.Exists()) return false;
-            if (_driver1 is null || !_driver1.IsAlive || _driver2 is null || !_driver2.IsAlive) return false;
+            if (_driver1 is null || !_driver1.IsAlive || _driver2 is null || !_driver2.IsAlive)
+            {
+                if (_driver1 is not null)
+                {
+                    if (_driver1.IsDead && _driver1.AttachedBlip is not null) _driver1.AttachedBlip.Delete();
+                    else if (_driver1.IsCuffed && _driver1.AttachedBlip is not null)
+                    {
+                        if (_driver1.AttachedBlip.Color != BlipColor.Blue)
+                        {
+                            _driver1.AttachedBlip.Color = BlipColor.Blue;
+                            _driver1.AttachedBlip.IsFlashing = true;
+                        }
+                    }
+                }
+                if (_driver2 is not null)
+                {
+                    if (_driver2.IsDead && _driver2.AttachedBlip is not null) _driver2.AttachedBlip.Delete();
+                    else if (_driver2.IsCuffed && _driver2.AttachedBlip is not null)
+                    {
+                        if (_driver2.AttachedBlip.Color != BlipColor.Blue)
+                        {
+                            _driver2.AttachedBlip.Color = BlipColor.Blue;
+                            _driver2.AttachedBlip.IsFlashing = true;
+                        }
+                    }
+                }
+                return false;
+            }
 
             // Check if player is close enough to intervene
             if (!_pursuitTriggered && Game.PlayerPed.Position.DistanceToSquared(_vehicle1.Position) < 2500.0f) // 50m
@@ -226,6 +266,10 @@ public class AggressiveRoadRage : Callout
     {
         _blip1?.Delete();
         _blip2?.Delete();
+        
+        if (_driver1 is not null && _driver1.Exists()) _driver1.AttachedBlip?.Delete();
+        if (_driver2 is not null && _driver2.Exists()) _driver2.AttachedBlip?.Delete();
+
         _group1?.Remove();
         _group2?.Remove();
 

@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("D4E5F6A7-B8C9-0D1E-2F3A-4B5C6D7E8F90")]
-[AddonProperties("Person with a Firearm", "^3DevKilo", "1.0")]
+[AddonProperties("Person with a Firearm", "^3DevKilo^7", "1.0")]
 public class Brandishing : Callout
 {
     static Random rnd = new Random();
@@ -107,6 +107,7 @@ public class Brandishing : Callout
             {
                 var blip = s.AttachBlip();
                 blip.Name = "Armed Subject";
+                blip.Scale = 0.7f;
             }
             NotificationService.ShowNetworkedNotification("Dispatch: Caller reports subject is brandishing a weapon. Approach with caution.", "Dispatch");
         }
@@ -122,6 +123,22 @@ public class Brandishing : Callout
         // Predicate returns true to continue waiting, false to stop waiting
         await QueueService.Predicate(() => 
         {
+            foreach (var suspect in _suspects)
+            {
+                if (suspect.IsDead && suspect.AttachedBlip is not null)
+                {
+                    suspect.AttachedBlip.Delete();
+                }
+                else if (suspect.IsCuffed && suspect.AttachedBlip is not null)
+                {
+                    if (suspect.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        suspect.AttachedBlip.Color = BlipColor.Blue;
+                        suspect.AttachedBlip.IsFlashing = true;
+                    }
+                }
+            }
+
             if (_suspects.All(s => !s.IsAlive || s.IsCuffed)) return false;
 
             if (!_hasReacted)

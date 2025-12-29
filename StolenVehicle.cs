@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("C3D4E5F6-A7B8-9012-3456-789012CDEFAB")]
-[AddonProperties("Stolen Vehicle", "^3DevKilo", "1.0")]
+[AddonProperties("Stolen Vehicle", "^3DevKilo^7", "1.0")]
 public class StolenVehicle : Callout
 {
     static Random rnd = new Random();
@@ -44,9 +44,6 @@ public class StolenVehicle : Callout
             "ANPR Hit: A vehicle reported stolen has been detected in the area. Intercept and investigate.";
         ResponseCode = 3;
         StartDistance = CalloutConfig.StolenVehicleConfig.StartDistance;
-        API.CancelAllPoliceReports();
-        API.PlayPoliceReport("SCRIPTED_SCANNER_REPORT_CAR_STEAL_4_01",1f);
-        
     }
 
     public override Task<bool> CheckRequirements() => Task.FromResult(CalloutConfig.StolenVehicleConfig.Enabled);
@@ -188,6 +185,10 @@ public class StolenVehicle : Callout
                 {
                     s.AlwaysKeepTask = true;
                     s.BlockPermanentEvents = true;
+                    var sBlip = s.AttachBlip();
+                    sBlip.Name = "Suspect";
+                    sBlip.Scale = 0.7f;
+                    sBlip.Color = BlipColor.Red;
                 }
             }
         }
@@ -203,6 +204,22 @@ public class StolenVehicle : Callout
         await QueueService.Predicate(() =>
         {
             if (_vehicle is null || !_vehicle.Exists()) return false;
+
+            foreach (var suspect in _suspects)
+            {
+                if (suspect.IsDead && suspect.AttachedBlip is not null)
+                {
+                    suspect.AttachedBlip.Delete();
+                }
+                else if (suspect.IsCuffed && suspect.AttachedBlip is not null)
+                {
+                    if (suspect.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        suspect.AttachedBlip.Color = BlipColor.Blue;
+                        suspect.AttachedBlip.IsFlashing = true;
+                    }
+                }
+            }
 
             // Pursuit logic
             if (_suspects.All(s => !s.IsAlive || s.IsCuffed)) return false;

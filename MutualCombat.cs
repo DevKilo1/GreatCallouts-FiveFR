@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D")]
-[AddonProperties("Mutual Combat", "^3DevKilo", "1.0")]
+[AddonProperties("Mutual Combat", "^3DevKilo^7", "1.0")]
 public class MutualCombat : Callout
 {
     static Random rnd = new Random();
@@ -106,11 +106,31 @@ public class MutualCombat : Callout
         NotificationService.ShowNetworkedNotification("Dispatch: Fight in progress. Break it up.", "Dispatch");
         foreach (var suspect in suspects)
         {
-            suspect.AttachBlip();
+            var blip = suspect.AttachBlip();
+            blip.Name = "Suspect";
+            blip.Scale = 0.7f;
             suspect.Task.FightAgainstHatedTargets(200f, -1);
         }
 
-        _ = QueueService.Predicate(() => !suspects.All(s => !s.IsAlive || s.IsCuffed)).ContinueWith(_ => FinishCallout()); // Finish callout when complete.
+        _ = QueueService.Predicate(() => 
+        {
+            foreach (var suspect in suspects)
+            {
+                if (suspect.IsDead && suspect.AttachedBlip is not null)
+                {
+                    suspect.AttachedBlip.Delete();
+                }
+                else if (suspect.IsCuffed && suspect.AttachedBlip is not null)
+                {
+                    if (suspect.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        suspect.AttachedBlip.Color = BlipColor.Blue;
+                        suspect.AttachedBlip.IsFlashing = true;
+                    }
+                }
+            }
+            return !suspects.All(s => !s.IsAlive || s.IsCuffed);
+        }).ContinueWith(_ => FinishCallout()); // Finish callout when complete.
         base.OnStart(closest);
     }
 

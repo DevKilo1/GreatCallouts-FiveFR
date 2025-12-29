@@ -11,8 +11,8 @@ using FiveFR._API.Services;
 
 namespace GreatCallouts_FiveFR
 {
-    [Guid("10DFA719-5CED-4193-9BE9-67C71A8BCEA9")]
-    [AddonProperties( "Hotbox Call", "^3DevKilo", "1.0.0")]
+    [Guid("E71300D8-220A-4FEF-ABE3-FEA95A43BA2E")]
+    [AddonProperties( "Hotbox Call", "^3DevKilo^7", "1.0.0")]
     public class HotboxCall : Callout
     {
         private int _particleHandle;

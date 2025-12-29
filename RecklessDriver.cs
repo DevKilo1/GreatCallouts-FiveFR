@@ -12,7 +12,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("07BF85A3-31CB-40F7-A216-390030273903")]
-[AddonProperties("Reckless Driver", "^3DevKilo", "1.0.0")]
+[AddonProperties("Reckless Driver", "^3DevKilo^7", "1.0.0")]
 public class RecklessDriver : Callout
 {
     static Random rnd = new Random();
@@ -143,7 +143,22 @@ public class RecklessDriver : Callout
         // Predicate returns true to continue waiting, false to stop waiting
         await QueueService.Predicate(() => 
         {
-            if (!_suspectDriver.IsAlive || _suspectDriver.IsCuffed) return false;
+            if (!_suspectDriver.IsAlive || _suspectDriver.IsCuffed)
+            {
+                if (_suspectDriver.IsDead && _suspectDriver.AttachedBlip is not null)
+                {
+                    _suspectDriver.AttachedBlip.Delete();
+                }
+                else if (_suspectDriver.IsCuffed && _suspectDriver.AttachedBlip is not null)
+                {
+                    if (_suspectDriver.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        _suspectDriver.AttachedBlip.Color = BlipColor.Blue;
+                        _suspectDriver.AttachedBlip.IsFlashing = true;
+                    }
+                }
+                return false;
+            }
             
             if (_suspectVehicle.Speed < 1.0f && Game.PlayerPed.Position.DistanceToSquared(_suspectVehicle.Position) < 100f && _suspectVehicle.State.Get("StoppedState") is true)
                 return false;

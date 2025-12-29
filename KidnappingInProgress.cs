@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("E5F6A7B8-C901-2345-6789-0123DEFBC234")]
-[AddonProperties("Kidnapping in Progress", "^3DevKilo", "1.0")]
+[AddonProperties("Kidnapping in Progress", "^3DevKilo^7", "1.0")]
 public class KidnappingInProgress : Callout
 {
     static Random rnd = new Random();
@@ -34,8 +34,6 @@ public class KidnappingInProgress : Callout
         CalloutDescription = "911 Report: Witness states a person was forced into a vehicle. Suspect is armed and dangerous.";
         ResponseCode = 3;
         StartDistance = CalloutConfig.KidnappingInProgressConfig.StartDistance;
-        API.CancelAllPoliceReports();
-        API.PlayPoliceReport("SCRIPTED_SCANNER_REPORT_FRANLIN_0_KIDNAP", 0f);
     }
 
     public override Task<bool> CheckRequirements() => Task.FromResult(CalloutConfig.KidnappingInProgressConfig.Enabled);
@@ -116,11 +114,18 @@ public class KidnappingInProgress : Callout
             {
                 _suspect.AlwaysKeepTask = true;
                 _suspect.BlockPermanentEvents = true;
+                var sBlip = _suspect.AttachBlip();
+                sBlip.Name = "Suspect";
+                sBlip.Scale = 0.7f;
             }
             if (_victim is not null)
             {
                 _victim.AlwaysKeepTask = true;
                 _victim.BlockPermanentEvents = true;
+                var vBlip = _victim.AttachBlip();
+                vBlip.Name = "Victim";
+                vBlip.Color = BlipColor.Blue;
+                vBlip.Scale = 0.7f;
             }
         }
         else
@@ -135,7 +140,21 @@ public class KidnappingInProgress : Callout
         await QueueService.Predicate(() =>
         {
             if (_vehicle is null || !_vehicle.Exists()) return false;
-            if (_suspect is null || !_suspect.IsAlive) return false;
+            if (_suspect is null || !_suspect.IsAlive)
+            {
+                 if (_suspect is not null && _suspect.AttachedBlip is not null) _suspect.AttachedBlip.Delete();
+                 return false;
+            }
+
+            // Blip management
+            if (_suspect.IsCuffed && _suspect.AttachedBlip is not null)
+            {
+                if (_suspect.AttachedBlip.Color != BlipColor.Blue)
+                {
+                    _suspect.AttachedBlip.Color = BlipColor.Blue;
+                    _suspect.AttachedBlip.IsFlashing = true;
+                }
+            }
 
             // Trigger behavior if player is close
             if (!_pursuitActive && Game.PlayerPed.Position.DistanceToSquared(_vehicle.Position) < 2500.0f) // 50m

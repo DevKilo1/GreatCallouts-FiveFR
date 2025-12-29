@@ -13,7 +13,7 @@ using FiveFR._API.Services;
 namespace GreatCallouts_FiveFR;
 
 [Guid("075ED322-CDF9-4FA3-BAE9-A195E991A453")]
-[AddonProperties("Shots Fired", "^3DevKilo", "1.0")]
+[AddonProperties("Shots Fired", "^3DevKilo^7", "1.0")]
 public class ShotsFired : Callout
 {
     static Random rnd = new Random();
@@ -118,13 +118,33 @@ public class ShotsFired : Callout
         NotificationService.ShowNetworkedNotification("Dispatch: Multiple shots fired reported at your location. Suspects are armed.", "Dispatch");
         suspects.ForEach((suspect) =>
         {
-            suspect.AttachBlip();
+            var blip = suspect.AttachBlip();
+            blip.Name = "Suspect";
+            blip.Scale = 0.7f;
             suspect.AlwaysKeepTask = true;
             suspect.BlockPermanentEvents = true;
             suspect.Task.FightAgainstHatedTargets(StartDistance, -1);
         });
         base.OnStart(closest);
-        await QueueService.Predicate(() => !suspects.Any(s => s.IsAlive));
+        await QueueService.Predicate(() => 
+        {
+            foreach (var suspect in suspects)
+            {
+                if (suspect.IsDead && suspect.AttachedBlip is not null)
+                {
+                    suspect.AttachedBlip.Delete();
+                }
+                else if (suspect.IsCuffed && suspect.AttachedBlip is not null)
+                {
+                    if (suspect.AttachedBlip.Color != BlipColor.Blue)
+                    {
+                        suspect.AttachedBlip.Color = BlipColor.Blue;
+                        suspect.AttachedBlip.IsFlashing = true;
+                    }
+                }
+            }
+            return !suspects.Any(s => s.IsAlive);
+        });
         FinishCallout();
     }
 
